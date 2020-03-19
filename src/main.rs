@@ -10,7 +10,8 @@ use piston::input::{RenderArgs, RenderEvent, UpdateArgs, UpdateEvent};
 use piston::window::WindowSettings;
 
 mod world;
-use world::World;
+use world::*;
+
 
 pub struct Game {
     gl: GlGraphics, // OpenGL drawing backend.
@@ -21,24 +22,27 @@ impl Game {
     fn render(&mut self, args: &RenderArgs) {
         //use graphics::*;
 
-        for chunk in self.world.chunks.iter_mut().flatten() {
-            self.gl.draw(args.viewport(), |c, gl| {
-                for tile in chunk.tiles.iter().flatten() {
-                    //i have yet to make this work, lole!
-                    //TODO: this is what must be made to work
-                }
-            });
-        }
-
+        let worldref = &mut self.world; //create a handy mutable reference to the world so we can borrow it
         self.gl.draw(args.viewport(), |c, gl| {
-            // Clear the screen.
-            //clear(GREEN, gl);
+            //println!("Drawing New Frame!");
+            let PPU = world::PIXELS_PER_UNIT as f64;
+            //clear(GREEN, gl); // Clear the screen.
             //graphics::rectangle(color: types::Color, rect: R, transform: math::Matrix2d, g: &mut G)
-            // i dont understand this man
+            for chunk in 0..worldref.chunks.len() { //go through each chunk
+                //println!("Drawing New Chunk!");
+                let chunk_xy = worldref.get_chunk_xy(chunk);
+                let chunk_x = chunk_xy.x*world::CHUNK_WIDTH as i32; //position of the bottom left of the chunk
+                let chunk_y = chunk_xy.y*world::CHUNK_HEIGHT as i32; //position of the bottom right of the chunk
+                
+                for tile in 0..worldref.chunks[chunk].tiles.len() {
+                    let tile_xy = worldref.chunks[chunk].get_tile_xy(tile);
+                    let tile_x = tile_xy.x as f64 + chunk_x as f64;
+                    let tile_y = tile_xy.y as f64 + chunk_y as f64;
+                    let tileref = worldref.chunks[chunk].tiles[tile]; //might not actually be a ref but i dont care, it just cant be called tile lole!
+                    graphics::rectangle(tileref.color, [tile_x*PPU, tile_y*PPU, PPU, PPU], c.transform, gl);
+                }
+            }
             
-            //time for fun code
-            
-
         });
     }
 
@@ -52,7 +56,7 @@ fn main() {
     let opengl = OpenGL::V3_2;
 
     // Create an Glutin window.
-    let mut window: Window = WindowSettings::new("spinning-square", [200, 200])
+    let mut window: Window = WindowSettings::new("Chunks and Stuff", [1920, 1080])
         .graphics_api(opengl)
         .exit_on_esc(true)
         .build()
