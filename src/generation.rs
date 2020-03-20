@@ -18,16 +18,17 @@ struct Perlin_Params {
     scale_factor: f32,
 } //parameters the perlin noise function will takes
 
-pub struct Perlin {
+pub struct Generator {
     pub seed: u64,
+    //heightmap
 }
 
-impl Perlin {
+impl Generator {
 
     pub fn gen_chunk(&self, chunk_xy: Vector2i) -> Chunk {
         let mut new_tiles = [Tile{tile_type: Tile_Type::AIR};TILE_COUNT];
         
-        let perlin_output = Perlin::gen_1d_noise(self.seed, chunk_xy, 
+        let perlin_output = Generator::perlin_individual_chunk(self.seed, chunk_xy, 
             Perlin_Params{
                 octaves: 6, //2 to the power of this should be less than the amount of points
                 scale_factor: 2.0, //half each octave
@@ -49,8 +50,8 @@ impl Perlin {
         chunk
     }
 
-    //TODO: change this beacuse it makes weird bad noise - need to figure out how to take other chunks into account - but fun for my first perlin noise function
-    fn gen_1d_noise(seed: u64, chunk_xy: Vector2i, params: Perlin_Params) -> [u8; CHUNK_WIDTH] {
+    // only makes individual chunks that dont connect
+    fn perlin_individual_chunk(seed: u64, chunk_xy: Vector2i, params: Perlin_Params) -> [u8; CHUNK_WIDTH] {
         let mut hasher = SipHasher::new();
         hasher.write_u64(seed);
         hasher.write_u32(chunk_xy.x as u32);
@@ -98,5 +99,7 @@ impl Perlin {
     
 }
 
+//TODO:
+//use heightmap thing
 //make a method that generates a chunk or at least gives you the tile for an x y spot for the chunk generator to use
 //you make chunks connect by offsetting the x y by the chunk x y times 8 (chunk width), so the method gotta take x and y - smart

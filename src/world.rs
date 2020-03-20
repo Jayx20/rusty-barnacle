@@ -10,7 +10,7 @@ pub const TILE_COUNT: usize = CHUNK_WIDTH*CHUNK_HEIGHT;
 
 pub const SEED: u64 = 123456;
 
-use super::noise;
+use super::generation;
 use super::math::*;
 
 #[derive(Copy, Clone)]
@@ -79,7 +79,7 @@ impl Chunk {
 pub struct World {
     pub chunks: Vec<Chunk>,
     chunkmap: HashMap<usize, Vector2i>,
-    noise_gen: noise::Perlin,
+    generator: generation::Generator,
     //noise: time to write my own noise function/struct
 }
 
@@ -90,35 +90,19 @@ impl World {
         self.chunkmap.insert(index, xy); //associates that chunk with the X and Y coordinates
     }
 
-    pub fn gen_chunk(&mut self, xy: Vector2i) {
-        let mut new_chunk: Chunk = Chunk::new();
-        //TODO: noise stuff
-        self.add_chunk(new_chunk, xy);
-    }
-
     //pub fn del_chunk would be nice
 
     pub fn test(seed: u64) -> World {
         let mut world : World = World {
             chunks: Vec::new(),
             chunkmap: HashMap::new(),
-            noise_gen: noise::Perlin {seed},
+            generator: generation::Generator {seed},
         };
-        //world.noise_gen.debug_print_noise();
-
         //Makes a fancy square of 4 chunks
         //world.add_chunk(world.noise_gen.gen_chunk(Vector2i{x:0,y:3}), Vector2i{x:0,y:3});
-        
-        //world.add_chunk(Chunk::random(), Vector2i{x:1,y:1});
 
-        /*for i in 0..10 {
-            world.add_chunk(world.noise_gen.gen_chunk(Vector2i{x:i,y:3}), Vector2i{x:i,y:3});
-        }*/
-
-        for x in 0..8 {
-            for y in 0..5 {
-                world.add_chunk(world.noise_gen.gen_chunk(Vector2i{x,y}), Vector2i{x,y});
-            }
+        for i in 0..10 {
+            world.add_chunk(world.generator.gen_chunk(Vector2i{x:i,y:3}), Vector2i{x:i,y:3});
         }
 
         world

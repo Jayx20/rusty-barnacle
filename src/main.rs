@@ -12,7 +12,7 @@ use piston::window::WindowSettings;
 mod math;
 mod world;
 use world::*;
-mod noise;
+mod generation;
 
 
 pub struct Game {
