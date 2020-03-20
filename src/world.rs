@@ -10,7 +10,7 @@ pub const TILE_COUNT: usize = CHUNK_WIDTH*CHUNK_HEIGHT;
 
 pub const MIN_HEIGHT: i32 = 2;
 pub const MAX_HEIGHT: i32 = 2; //generate cool chunks between 0 and 2
-pub const GENERATION_WIDTH: usize = 4; //how many chunks wide should each generation group be - wider means larger clumps of chunks are generated together - laggier but smoother
+pub const GENERATION_WIDTH: usize = 4; //how many chunks wide should each generation group be - wider means larger clumps of chunks are generated together - laggier but smoother = not actually sure though
 //MAKE GENERATION WIDTH AN EVEN NUMBER
 
 use super::generation;

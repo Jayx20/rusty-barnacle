@@ -89,13 +89,13 @@ impl Generator {
             return Chunk::fill(Tile_Type::DIRT);
         }
 
-        let heightmap = Generator::perlin_individual_chunk(self.seed, chunk_xy, 
+        /*let heightmap = Generator::perlin_individual_chunk(self.seed, chunk_xy, 
             Perlin_Params{
                 octaves: 6, //2 to the power of this should be less than the amount of points
                 scale_factor: 2.0, //half each octave
         } );
 
-        /*println!("Da Heights: {:?}",self.perlin_chunk(chunk_xy, 
+        println!("Da Heights for chunk({:?}): {:?}\n\n",chunk_xy,self.perlin_chunk(chunk_xy, 
             Perlin_Params {
                 octaves: 8,
                 scale_factor: 2.0,
@@ -105,13 +105,14 @@ impl Generator {
 
         //WIP function not working yet :(
             //TODO: fix
-        /*let heightmap = self.perlin_chunk(chunk_xy, 
+        println!("chunk({:?}):\n\n",chunk_xy);
+        let heightmap = self.perlin_chunk(chunk_xy, 
                             Perlin_Params {
                                 octaves: 7,
                                 scale_factor: 1.5,
                             },
                             ((MAX_HEIGHT-MIN_HEIGHT)+1)*CHUNK_HEIGHT as i32
-                        );*/
+                        );
 
         Generator::fill_chunk_with_heights(heightmap)
     }
@@ -139,23 +140,28 @@ impl Generator {
     fn perlin_chunk(&mut self, chunk_xy: Vector2i, params: Perlin_Params, terrain_height: i32) -> [u32; CHUNK_WIDTH] {
         let mut random_noise: [f32; CHUNK_WIDTH*GENERATION_WIDTH+1] = [0.0; CHUNK_WIDTH*GENERATION_WIDTH+1];
         //x value of first chunk in our little starting group thing
-        let offset_from_group = (GENERATION_WIDTH -2)/2; //the offset in chunk x values between our chunk and the starting chunk of the generation group
-        let starting_chunk = (chunk_xy.x / 2)*2 - offset_from_group as i32; //integer math rounds it to the first multiple of 2 then move back until at the start of our little group
+        let start_offset_from_group = (GENERATION_WIDTH -2)/2; //the offset in chunk x values between our chunk and the starting chunk of the generation group
+        let starting_chunk = (chunk_xy.x / 2)*2 - start_offset_from_group as i32; //integer math rounds it to the first multiple of 2 then move back until at the start of our little group
+        let our_offset_from_group = start_offset_from_group + (chunk_xy.x as usize % 2);
         //chunks to load seeded data from will be the starting chunk plus the rest until GENERATION_WIDTH is met
         let mut index = 0;
+        println!("Here is every single random_noise for this chunk group:");
         for x in starting_chunk..starting_chunk+GENERATION_WIDTH as i32 {
             let seedsref: &[f32; CHUNK_WIDTH] = self.seedmap.get_chunk_seeds(x);
             for subindex in 0..seedsref.len() {
                 random_noise[index*CHUNK_WIDTH + subindex] = seedsref[subindex];
+                print!("{}, ",seedsref[subindex]);
             }
             index += 1;
+            println!();
         } //this loop loads all of the data for the chunks into the random_noise array
         random_noise[CHUNK_WIDTH*GENERATION_WIDTH] = random_noise[0]; //sets the last value to the first as that is needed by perlin noise
-        
+        println!("{}",random_noise[CHUNK_WIDTH*GENERATION_WIDTH]);
+
         //time to use perlin noise to make the random noise cool
         let mut output: [u32; CHUNK_WIDTH] = [0; CHUNK_WIDTH];
 
-        for x in CHUNK_WIDTH*offset_from_group..CHUNK_WIDTH*(offset_from_group+1) { //go through each X value starting at our chunk and determine Y value from that
+        for x in CHUNK_WIDTH*our_offset_from_group..CHUNK_WIDTH*(our_offset_from_group+1) { //go through each X value starting at our chunk and determine Y value from that
             let mut result: f32 = 0.0;
             let mut amplitude: f32 = 1.0;
             let mut totalAmplitude: f32 = 0.0; //starting values
@@ -175,11 +181,12 @@ impl Generator {
                 let interp = lerp(random_noise[point1],random_noise[point2],offset); //interpolate the value of x from the two points given the offset
 
                 result += interp * amplitude; //add the interpolated value, making sure to scale to the amplitude to reduce power of higher frequency noise
-                //println!("Debug Data for {}. Amplitude: {}, Point_Dist: {}, Points 1 and 2, {}-{}, Their values: {}, {}, Offset: {}, Interp: {}, Result: {}", x, amplitude, point_dist, point1,point2, random_noise[point1], random_noise[point2], offset, interp, result);
+                
+                println!("Debug Data for {}. Amplitude: {}, Point_Dist: {}, Points 1 and 2, {}-{}, Their values: {}, {}, Offset: {}, Interp: {}, Result: {}", x, amplitude, point_dist, point1,point2, random_noise[point1], random_noise[point2], offset, interp, result);
             }
              let normalized = result/totalAmplitude; //gives us something between 0 and 1
              
-             output[x-CHUNK_WIDTH*offset_from_group] = (normalized*terrain_height as f32).round() as u32 //multiply the float by the terrain height and round to integer so we get a value that fits
+             output[x-CHUNK_WIDTH*our_offset_from_group] = (normalized*terrain_height as f32).round() as u32 //multiply the float by the terrain height and round to integer so we get a value that fits
         }   
 
         output
