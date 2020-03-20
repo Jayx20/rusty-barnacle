@@ -9,8 +9,10 @@ use piston::event_loop::{EventSettings, Events};
 use piston::input::{RenderArgs, RenderEvent, UpdateArgs, UpdateEvent};
 use piston::window::WindowSettings;
 
+mod math;
 mod world;
 use world::*;
+mod noise;
 
 
 pub struct Game {
@@ -39,7 +41,15 @@ impl Game {
                     let tile_x = tile_xy.x as f64 + chunk_x as f64;
                     let tile_y = tile_xy.y as f64 + chunk_y as f64;
                     let tileref = worldref.chunks[chunk].tiles[tile]; //might not actually be a ref but i dont care, it just cant be called tile lole!
-                    graphics::rectangle(tileref.color, [tile_x*PPU, tile_y*PPU, PPU, PPU], c.transform, gl);
+                    
+                    //temporary block for colors from tile type, to be moved to a differint file and use a matching function
+                    let color: [f32; 4] = match tileref.tile_type {
+                        Tile_Type::AIR => [0.0, 0.0, 0.0, 0.0], //transparent, i think
+                        Tile_Type::DIRT => [168.0/255.0, 115.0/255.0, 72.0/255.0, 1.0],
+                        Tile_Type::CLOUD => [197.0/255.0, 201.0/255.0, 201.0/255.0, 1.0],
+                    };
+                    //
+                    graphics::rectangle(color, [tile_x*PPU, tile_y*PPU, PPU, PPU], c.transform, gl);
                 }
             }
             

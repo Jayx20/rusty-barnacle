@@ -1,35 +1,32 @@
 extern crate rand;
-use rand::random;
+use rand::{thread_rng, Rng};
 use std::collections::HashMap;
 
-pub static PIXELS_PER_UNIT: u32 = 32; //how many pixels on the screen per every unit in the game, might not need to be constant (consider zooming etc)
-pub static CHUNK_WIDTH:  usize = 8;
-pub static CHUNK_HEIGHT: usize = 8;
+pub const PIXELS_PER_UNIT: u32 = 8; //how many pixels on the screen per every unit in the game, might not need to be constant (consider zooming etc)
+pub const CHUNK_WIDTH:  usize = 32;
+pub const CHUNK_HEIGHT: usize = 32;
 
-//if needed will replace Points with Vector2f and Vector2i from a generic vector library or i'll write one myself
-#[derive(Copy, Clone, Debug)]
-pub struct Vector2f {
-    pub x: f32,
-    pub y: f32,
-}
-#[derive(Copy, Clone, Debug)]
-pub struct Vector2i {
-    pub x: i32,
-    pub y: i32,
-}
+pub const TILE_COUNT: usize = CHUNK_WIDTH*CHUNK_HEIGHT;
 
-fn random_color() -> f32 {
-    (random::<u8>() as f32) /255.0
+pub const SEED: u64 = 12345;
+
+use super::noise;
+use super::math::*;
+
+#[derive(Copy, Clone)]
+pub enum Tile_Type {
+    AIR = 0,
+    DIRT = 1,
+    CLOUD = 2,
 }
 
 #[derive(Copy, Clone)]
 pub struct Tile {
-    pub color: [f32; 4],
-    //going to change so tiles can be cooler but idk what to do yet, maybe just store an id?
+    pub tile_type: Tile_Type,
 }
 
 pub struct Chunk {
-    pub tiles: [Tile; 64],
+    pub tiles: [Tile; TILE_COUNT],
     //8 by 8 square
 }
 
@@ -48,14 +45,28 @@ impl Chunk {
             y,
         }
     }
-}
+    
+    pub fn new() -> Chunk {
+        Chunk {
+            tiles: [Tile{tile_type: Tile_Type::AIR};TILE_COUNT],
+        }
+    }
 
-impl Chunk {
     fn random() -> Chunk {
-        let mut new_tiles: [Tile; 64] = [Tile{color:[0.2,0.0,0.0,1.0]};64]; //just make generic tiles
+        let mut new_tiles: [Tile; TILE_COUNT] = [Tile{tile_type: Tile_Type::AIR};TILE_COUNT]; //just make generic tiles
         
+        let mut rng = rand::thread_rng();
+
         for tile in new_tiles.iter_mut() {
-            *tile = Tile {color: [random_color(), random_color(), random_color(), 1.0]};
+            let rnd: u8 = rng.gen_range(0,3);
+            let tile_type: Tile_Type;
+            tile_type = match rnd {
+                0 => Tile_Type::AIR,
+                1 => Tile_Type::DIRT,
+                2 => Tile_Type::CLOUD,
+                _ => panic!("How do you random number???"),
+            };
+            *tile = Tile {tile_type};
         } //replace each tile with a new random one
 
         Chunk {
@@ -68,6 +79,8 @@ impl Chunk {
 pub struct World {
     pub chunks: Vec<Chunk>,
     chunkmap: HashMap<usize, Vector2i>,
+    noise_gen: noise::Perlin,
+    //noise: time to write my own noise function/struct
 }
 
 impl World {
@@ -77,19 +90,30 @@ impl World {
         self.chunkmap.insert(index, xy); //associates that chunk with the X and Y coordinates
     }
 
+    pub fn gen_chunk(&mut self, xy: Vector2i) {
+        let mut new_chunk: Chunk = Chunk::new();
+        //TODO: noise stuff
+        self.add_chunk(new_chunk, xy);
+    }
+
     //pub fn del_chunk would be nice
 
     pub fn test() -> World {
         let mut world : World = World {
             chunks: Vec::new(),
             chunkmap: HashMap::new(),
+            noise_gen: noise::Perlin {seed:SEED},
         };
+        //world.noise_gen.debug_print_noise();
 
         //Makes a fancy square of 4 chunks
-        world.add_chunk(Chunk::random(), Vector2i{x:0,y:0});
-        world.add_chunk(Chunk::random(), Vector2i{x:0,y:1});
-        world.add_chunk(Chunk::random(), Vector2i{x:1,y:0});
-        world.add_chunk(Chunk::random(), Vector2i{x:1,y:1});
+        //world.add_chunk(world.noise_gen.gen_chunk(Vector2i{x:0,y:3}), Vector2i{x:0,y:3});
+        
+        //world.add_chunk(Chunk::random(), Vector2i{x:1,y:1});
+
+        for i in 0..10 {
+            world.add_chunk(world.noise_gen.gen_chunk(Vector2i{x:i,y:3}), Vector2i{x:i,y:3});
+        }
 
         world
     }
