@@ -26,9 +26,9 @@ impl Game {
 
         let worldref = &mut self.world; //create a handy mutable reference to the world so we can borrow it
         self.gl.draw(args.viewport(), |c, gl| {
+            graphics::clear([255.0/255.0, 255.0/255.0, 255.0/255.0, 1.0], gl); // Clear the screen.
             //println!("Drawing New Frame!");
             let PPU = world::PIXELS_PER_UNIT as f64;
-            //clear(GREEN, gl); // Clear the screen.
             //graphics::rectangle(color: types::Color, rect: R, transform: math::Matrix2d, g: &mut G)
             for chunk in 0..worldref.chunks.len() { //go through each chunk
                 //println!("Drawing New Chunk!");
@@ -57,6 +57,7 @@ impl Game {
     }
 
     fn update(&mut self, args: &UpdateArgs) {
+        //self.world = World::test(rand::random());
         // use args.dt to update stuff per second, awesome
     }
 }
@@ -75,7 +76,7 @@ fn main() {
     // Create a new game and run it.
     let mut game = Game {
         gl: GlGraphics::new(opengl),
-        world: World::test(),
+        world: World::test(123456),
     };
 
 

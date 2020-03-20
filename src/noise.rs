@@ -30,7 +30,7 @@ impl Perlin {
         let perlin_output = Perlin::gen_1d_noise(self.seed, chunk_xy, 
             Perlin_Params{
                 octaves: 6, //2 to the power of this should be less than the amount of points
-                scale_factor: 2.5, //half each octave
+                scale_factor: 2.0, //half each octave
         } );
 
         //go through each x value
@@ -82,12 +82,14 @@ impl Perlin {
                 let point1: usize = (x / point_dist) * point_dist; //index of first point - division finds the first point before x
                 let point2: usize = (point1 + point_dist) % CHUNK_WIDTH; //second point will be first point plus the dist
 
-                let offset = (x-point1) / point_dist; //distance of x from the first point, divided by the distance between the two points
-                let interp = lerp(random_noise[point1],random_noise[point2],1.0); //interpolate the value of x from the two points given the offset
+                let offset = (x-point1) as f32 / point_dist as f32; //distance of x from the first point, divided by the distance between the two points
+                let interp = lerp(random_noise[point1],random_noise[point2],offset); //interpolate the value of x from the two points given the offset
 
                 result += interp * amplitude; //add the interpolated value, making sure to scale to the amplitude to reduce power of higher frequency noise
+                //println!("{:?}",(offset, interp));
             }
              let normalized = result/totalAmplitude; //gives us something between 0 and 1
+             
              output[x] = (normalized*CHUNK_HEIGHT as f32).round() as u8 //multiply the float by the chunk height, and then round to a u8 (chunk height should be below 255)
         }   
 

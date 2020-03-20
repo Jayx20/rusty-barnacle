@@ -8,7 +8,7 @@ pub const CHUNK_HEIGHT: usize = 32;
 
 pub const TILE_COUNT: usize = CHUNK_WIDTH*CHUNK_HEIGHT;
 
-pub const SEED: u64 = 12345;
+pub const SEED: u64 = 123456;
 
 use super::noise;
 use super::math::*;
@@ -98,11 +98,11 @@ impl World {
 
     //pub fn del_chunk would be nice
 
-    pub fn test() -> World {
+    pub fn test(seed: u64) -> World {
         let mut world : World = World {
             chunks: Vec::new(),
             chunkmap: HashMap::new(),
-            noise_gen: noise::Perlin {seed:SEED},
+            noise_gen: noise::Perlin {seed},
         };
         //world.noise_gen.debug_print_noise();
 
@@ -111,8 +111,14 @@ impl World {
         
         //world.add_chunk(Chunk::random(), Vector2i{x:1,y:1});
 
-        for i in 0..10 {
+        /*for i in 0..10 {
             world.add_chunk(world.noise_gen.gen_chunk(Vector2i{x:i,y:3}), Vector2i{x:i,y:3});
+        }*/
+
+        for x in 0..8 {
+            for y in 0..5 {
+                world.add_chunk(world.noise_gen.gen_chunk(Vector2i{x,y}), Vector2i{x,y});
+            }
         }
 
         world
