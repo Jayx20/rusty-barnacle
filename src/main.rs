@@ -76,7 +76,7 @@ fn main() {
     // Create a new game and run it.
     let mut game = Game {
         gl: GlGraphics::new(opengl),
-        world: World::test(123456),
+        world: World::test(12345),
     };
 
 

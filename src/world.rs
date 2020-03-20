@@ -8,7 +8,10 @@ pub const CHUNK_HEIGHT: usize = 32;
 
 pub const TILE_COUNT: usize = CHUNK_WIDTH*CHUNK_HEIGHT;
 
-pub const SEED: u64 = 123456;
+pub const MIN_HEIGHT: i32 = 2;
+pub const MAX_HEIGHT: i32 = 2; //generate cool chunks between 0 and 2
+pub const GENERATION_WIDTH: usize = 4; //how many chunks wide should each generation group be - wider means larger clumps of chunks are generated together - laggier but smoother
+//MAKE GENERATION WIDTH AN EVEN NUMBER
 
 use super::generation;
 use super::math::*;
@@ -49,6 +52,13 @@ impl Chunk {
     pub fn new() -> Chunk {
         Chunk {
             tiles: [Tile{tile_type: Tile_Type::AIR};TILE_COUNT],
+        }
+    }
+
+    #[doc="Makes a new chunk filled with a certain type of tile."]
+    pub fn fill(tile_type: Tile_Type) -> Chunk {
+        Chunk {
+            tiles: [Tile{tile_type};TILE_COUNT],
         }
     }
 
@@ -96,15 +106,21 @@ impl World {
         let mut world : World = World {
             chunks: Vec::new(),
             chunkmap: HashMap::new(),
-            generator: generation::Generator {seed},
+            generator: generation::Generator::new(seed),
         };
         //Makes a fancy square of 4 chunks
-        //world.add_chunk(world.noise_gen.gen_chunk(Vector2i{x:0,y:3}), Vector2i{x:0,y:3});
-
-        for i in 0..10 {
-            world.add_chunk(world.generator.gen_chunk(Vector2i{x:i,y:3}), Vector2i{x:i,y:3});
+        //let chunk = world.generator.gen_chunk(Vector2i{x:1, y:2});
+        //world.add_chunk(chunk, Vector2i{x:1,y:2});
+        
+        
+        //Temporary nicer looking generation
+        for x in 0..10 {
+            for y in 0..5 {
+                let chunk = world.generator.gen_chunk(Vector2i{x,y});
+                world.add_chunk(chunk, Vector2i{x,y});
+            }
         }
-
+        
         world
     }
 
