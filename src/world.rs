@@ -8,8 +8,8 @@ pub const CHUNK_HEIGHT: usize = 32;
 
 pub const TILE_COUNT: usize = CHUNK_WIDTH*CHUNK_HEIGHT;
 
-pub const MIN_HEIGHT: i32 = 2;
-pub const MAX_HEIGHT: i32 = 2; //generate cool chunks between 0 and 2
+pub const MIN_HEIGHT: i32 = 1;
+pub const MAX_HEIGHT: i32 = 1; //generate cool chunks between 0 and 2
 pub const GENERATION_WIDTH: usize = 4; //how many chunks wide should each generation group be - wider means larger clumps of chunks are generated together - laggier but smoother = not actually sure though
 //MAKE GENERATION WIDTH AN EVEN NUMBER
 
@@ -114,8 +114,8 @@ impl World {
         
         
         //Temporary nicer looking generation
-        for x in 0..10 {
-            for y in 0..5 {
+        for x in -15..15 {
+            for y in -15..15 {
                 let chunk = world.generator.gen_chunk(Vector2i{x,y});
                 world.add_chunk(chunk, Vector2i{x,y});
             }

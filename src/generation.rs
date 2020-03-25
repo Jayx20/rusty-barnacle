@@ -81,11 +81,10 @@ impl Generator {
 
     pub fn gen_chunk(&mut self, chunk_xy: Vector2i) -> Chunk {
 
-        //"below" actually meaning above the terrain
-        if chunk_xy.y < MIN_HEIGHT {
+        if chunk_xy.y > MAX_HEIGHT {
             return Chunk::fill(Tile_Type::AIR);
         }
-        else if chunk_xy.y > MAX_HEIGHT {
+        else if chunk_xy.y < MIN_HEIGHT {
             return Chunk::fill(Tile_Type::DIRT);
         }
 
@@ -105,7 +104,7 @@ impl Generator {
 
         //WIP function not working yet :(
             //TODO: fix
-        println!("chunk({:?}):\n\n",chunk_xy);
+        //println!("chunk({:?}):\n\n",chunk_xy);
         let heightmap = self.perlin_chunk(chunk_xy, 
                             Perlin_Params {
                                 octaves: 7,
@@ -125,7 +124,7 @@ impl Generator {
             let height = heights[i] as usize;
 
             for h in 0..height {
-                new_tiles[i + (31-h)*CHUNK_WIDTH].tile_type = Tile_Type::DIRT;
+                new_tiles[i + h*CHUNK_WIDTH].tile_type = Tile_Type::DIRT;
             }
         }
 
@@ -145,18 +144,18 @@ impl Generator {
         let our_offset_from_group = start_offset_from_group + (chunk_xy.x as usize % 2);
         //chunks to load seeded data from will be the starting chunk plus the rest until GENERATION_WIDTH is met
         let mut index = 0;
-        println!("Here is every single random_noise for this chunk group:");
+        //println!("Here is every single random_noise for this chunk group:");
         for x in starting_chunk..starting_chunk+GENERATION_WIDTH as i32 {
             let seedsref: &[f32; CHUNK_WIDTH] = self.seedmap.get_chunk_seeds(x);
             for subindex in 0..seedsref.len() {
                 random_noise[index*CHUNK_WIDTH + subindex] = seedsref[subindex];
-                print!("{}, ",seedsref[subindex]);
+                //print!("{}, ",seedsref[subindex]);
             }
             index += 1;
-            println!();
+            //println!();
         } //this loop loads all of the data for the chunks into the random_noise array
         random_noise[CHUNK_WIDTH*GENERATION_WIDTH] = random_noise[0]; //sets the last value to the first as that is needed by perlin noise
-        println!("{}",random_noise[CHUNK_WIDTH*GENERATION_WIDTH]);
+        //println!("{}",random_noise[CHUNK_WIDTH*GENERATION_WIDTH]);
 
         //time to use perlin noise to make the random noise cool
         let mut output: [u32; CHUNK_WIDTH] = [0; CHUNK_WIDTH];
@@ -182,7 +181,7 @@ impl Generator {
 
                 result += interp * amplitude; //add the interpolated value, making sure to scale to the amplitude to reduce power of higher frequency noise
                 
-                println!("Debug Data for {}. Amplitude: {}, Point_Dist: {}, Points 1 and 2, {}-{}, Their values: {}, {}, Offset: {}, Interp: {}, Result: {}", x, amplitude, point_dist, point1,point2, random_noise[point1], random_noise[point2], offset, interp, result);
+                //println!("Debug Data for {}. Amplitude: {}, Point_Dist: {}, Points 1 and 2, {}-{}, Their values: {}, {}, Offset: {}, Interp: {}, Result: {}", x, amplitude, point_dist, point1,point2, random_noise[point1], random_noise[point2], offset, interp, result);
             }
              let normalized = result/totalAmplitude; //gives us something between 0 and 1
              
