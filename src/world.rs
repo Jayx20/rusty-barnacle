@@ -2,7 +2,7 @@ extern crate rand;
 use rand::{thread_rng, Rng};
 use std::collections::HashMap;
 
-pub const PIXELS_PER_UNIT: u32 = 8; //how many pixels on the screen per every unit in the game, might not need to be constant (consider zooming etc)
+pub const PIXELS_PER_UNIT: u32 = 16; //how many pixels on the screen per every unit in the game, might not need to be constant (consider zooming etc)
 pub const CHUNK_WIDTH:  usize = 32;
 pub const CHUNK_HEIGHT: usize = 32;
 

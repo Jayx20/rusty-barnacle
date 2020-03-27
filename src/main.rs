@@ -1,13 +1,5 @@
-extern crate glfw_window;
-extern crate graphics;
-extern crate opengl_graphics;
-extern crate piston;
-
-use glfw_window::GlfwWindow as Window;
-use opengl_graphics::{GlGraphics, OpenGL};
-use piston::event_loop::{EventSettings, Events};
-use piston::input::{GenericEvent, RenderArgs, RenderEvent, UpdateArgs, UpdateEvent, PressEvent, ReleaseEvent, Button, MouseButton, Key};
-use piston::window::WindowSettings;
+use ggez::{graphics, Context, ContextBuilder, GameResult};
+use ggez::event::{self, EventHandler};
 
 mod math;
 mod world;
@@ -19,7 +11,6 @@ const SCREEN_WIDTH: u32 = 1920;
 const SCREEN_HEIGHT: u32 = 1080;
 
 pub struct Game {
-    gl: GlGraphics, // OpenGL drawing backend.
     world: World,
     camera: Camera,
 }
@@ -31,6 +22,38 @@ struct Camera {
     delta: [bool; 5], //whether key is pressed, basically. up down left right shift
 }
 
+impl Game {
+    pub fn new(_ctx: &mut Context) -> Game {
+        // Load/create resources such as images here.
+        Game {
+            world: World::test(rand::random::<u64>()),
+            camera: Default::default(),
+        }
+    }
+}
+
+impl EventHandler for Game {
+    fn update(&mut self, _ctx: &mut Context) -> GameResult<()> {
+        let mut speed = 1.0;
+        if self.camera.delta[4] { speed=5.0; }
+        if self.camera.delta[0] { self.camera.pos.y += 500.0* as f32*speed; } //up
+        if self.camera.delta[1] { self.camera.pos.y -= 500.0*args.dt as f32*speed; } //down
+        if self.camera.delta[2] { self.camera.pos.x += 500.0*args.dt as f32*speed; } //left
+        if self.camera.delta[3] { self.camera.pos.x -= 500.0*args.dt as f32*speed; } //right
+
+        //self.world = World::test(rand::random());
+        // use args.dt to update stuff per second, awesome
+        Ok(())
+    }
+
+    fn draw(&mut self, ctx: &mut Context) -> GameResult<()> {
+        graphics::clear(ctx, graphics::WHITE);
+        // Draw code here...
+        graphics::present(ctx)
+    }
+}
+
+/*
 impl Game {
     fn render(&mut self, args: &RenderArgs) {
         //use graphics::*;
@@ -91,27 +114,24 @@ impl Game {
         //self.world = World::test(rand::random());
         // use args.dt to update stuff per second, awesome
     }
-}
+}*/
 
 fn main() {
-    // Change this to OpenGL::V2_1 if not working.
-    let opengl = OpenGL::V3_2;
-
-    // Create an Glutin window.
-    let mut window: Window = WindowSettings::new("Chunks and Stuff", [SCREEN_WIDTH, SCREEN_HEIGHT])
-        .graphics_api(opengl)
-        .exit_on_esc(true)
-        .build()
-        .unwrap();
+    // Make a Context.
+    let (mut ctx, mut event_loop) = ContextBuilder::new("Chunks and Stuff", "Jayx20")
+		.build()
+		.expect("Could not create ggez context!");
 
     // Create a new game and run it.
-    let mut game = Game {
-        gl: GlGraphics::new(opengl),
-        world: World::test(rand::random::<u64>()),
-        camera: Default::default(),
-    };
+    let mut game = Game::new(&mut ctx);
 
+    // Run!
+    match event::run(&mut ctx, &mut event_loop, &mut game) {
+        Ok(_) => println!("Exited cleanly."),
+        Err(e) => println!("Error occured: {}", e)
+    }
 
+    /*
     let mut events = Events::new(EventSettings::new());
     while let Some(e) = events.next(&mut window) {
         if let Some(args) = e.render_args() {
@@ -158,4 +178,5 @@ fn main() {
         
         
     }
+    */
 }
